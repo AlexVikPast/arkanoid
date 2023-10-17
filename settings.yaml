@@ -1,0 +1,20 @@
+ball:
+- 200
+- 250
+- 3
+- -3
+ball_radius: 10
+ball_fill: blue
+ball_outline: black
+
+paddle_x: 200
+paddle_dx: 50
+paddle_y1: 380
+paddle_y2: 390
+paddle_offset: 50
+paddle_fill: red
+paddle_outline: black
+
+width: 400
+height: 400
+speed: 90
