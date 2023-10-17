@@ -87,7 +87,7 @@ end
 
 class Game
   attr_accessor :speed
-  attr_reader :width, :height, :setting
+  attr_reader :width, :height, :setting, :name
 
   def initialize
     extend ShareSetting
@@ -95,8 +95,9 @@ class Game
     @speed = @setting.value("speed")
     @width = @setting.value("width")
     @height = @setting.value("height")
+    @name =  @setting.value("name")
 
-    @root = TkRoot.new { title "Arkanoid" }
+    @root = TkRoot.new { title @name }
     
     @canvas = TkCanvas.new(@root, width: @width, height: @height)
     
