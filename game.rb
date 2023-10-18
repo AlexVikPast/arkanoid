@@ -12,8 +12,8 @@ class Ball
 
     @canvas = canvas
     
-    @x, @y, @dx, @dy = @setting.value("ball")
-    @r = @setting.value("ball_radius")
+    @x, @y, @dx, @dy =  @setting.value("ball") || [200, 250, -3, -3]
+    @r = @setting.value("ball_radius") || 10
     @fill =  @setting.value("ball_fill")
     @outline = @setting.value("ball_outline")
 
@@ -86,18 +86,25 @@ class Paddle
 end
 
 class Game
-  attr_accessor :speed
+  attr_accessor :speed, :point, :game_over, :life
   attr_reader :width, :height, :setting, :name
 
   def initialize
     extend ShareSetting
+
     @setting = setting
+
     @speed = @setting.value("speed")
     @width = @setting.value("width")
     @height = @setting.value("height")
+
     @name =  @setting.value("name")
 
-    @root = TkRoot.new { title @name }
+    @point = @setting.value("point")
+    @life = @setting.value("life") || 1
+    @game_over = false
+
+    @root = TkRoot.new
     
     @canvas = TkCanvas.new(@root, width: @width, height: @height)
     
@@ -117,21 +124,44 @@ class Game
   end
   
   def animate
+    @root.title = "#{@name}. point: #{@point}. count_life: #{@life}" if !game_over?
     @ball.move
     check_collision
     @root.after(100 - @speed) { animate }
   end
   
+  def game_over?
+    @game_over
+  end
+
+  def game_over
+    @root.title = "Game Over. Total point: #@point"
+    @game_over = true
+    @ball.dx = 0
+    @ball.dy = 0
+    @canvas.itemconfigure @paddle.paddle, :state => 'hidden'
+    @canvas.itemconfigure @ball.ball, :state => 'hidden'
+  end
+
   def check_collision
-    ball_bbox = @canvas.bbox(@ball.ball)
-    paddle_bbox = @canvas.bbox(@paddle.paddle)
-    
-    if ball_bbox && paddle_bbox
-      ball_x1, ball_y1, ball_x2, ball_y2 = ball_bbox
-      paddle_x1, paddle_y1, paddle_x2, paddle_y2 = paddle_bbox
+    if !game_over?
+      ball_bbox = @canvas.bbox(@ball.ball)
+      paddle_bbox = @canvas.bbox(@paddle.paddle)
       
-      if ball_y2 >= paddle_y1 && (paddle_x1..paddle_x2).include?((ball_x1 + ball_x2) / 2)
-        @ball.dy *= -1
+      if ball_bbox && paddle_bbox
+        ball_x1, ball_y1, ball_x2, ball_y2 = ball_bbox
+        paddle_x1, paddle_y1, paddle_x2, paddle_y2 = paddle_bbox
+        
+        if ball_y2 >= paddle_y1 && (paddle_x1..paddle_x2).include?((ball_x1 + ball_x2) / 2)
+          @point += 1
+          @ball.dy *= -1
+        end
+
+        if ball_y2 >= paddle_y1 && !(paddle_x1..paddle_x2).include?((ball_x1 + ball_x2) / 2)
+          @life -= 1
+          @ball.dy *= -1
+          game_over if @life.zero?
+        end
       end
     end
   end
