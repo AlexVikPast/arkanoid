@@ -21,3 +21,7 @@ speed: 90
 point: 0
 name: arcanoid
 life: 3
+
+reduce_racket_size: true
+speed_next: true
+score_threshold: 10

@@ -5,8 +5,8 @@ require_relative './paddle'
 
 
 class Game
-  attr_accessor :speed, :point, :game_over, :life, :ball, :paddle
-  attr_reader :width, :height, :setting, :name
+  attr_accessor :speed, :point, :game_over, :life, :ball, :paddle, :score_threshold
+  attr_reader :width, :height, :setting, :name, :reduce_racket_size, :speed_next
 
   def initialize
     extend Settings
@@ -22,6 +22,10 @@ class Game
     @point = @setting.value("point")
     @life = @setting.value("life") || 1
     @game_over = false
+
+    @speed_next = @setting.value("speed_next") || false
+    @reduce_racket_size = @setting.value("life") || false
+    @score_threshold = @setting.value("score_threshold") || 10
 
     @root = TkRoot.new
     
@@ -58,11 +62,13 @@ class Game
     @ball.dy += 1
   end
 
+  def reduce_racket_size
+    @paddle.dx -= 1
+  end
+
   def game_over
     @root.title = "Game Over. Total point: #@point"
     @game_over = true
-    @ball.dx = 0
-    @ball.dy = 0
     @canvas.itemconfigure @paddle.paddle, :state => 'hidden'
     @canvas.itemconfigure @ball.ball, :state => 'hidden'
   end
@@ -78,7 +84,8 @@ class Game
         
         if ball_y2 >= paddle_y1 && (paddle_x1..paddle_x2).include?((ball_x1 + ball_x2) / 2)
           @point += 1 
-          speed_next if (@point % 10).zero?
+          speed_next if (@point % @score_threshold).zero? && @speed_next
+          reduce_racket_size if (@point % @score_threshold).zero? && @reduce_racket_size
           @ball.dy *= -1
         end
 
