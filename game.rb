@@ -43,7 +43,7 @@ class Game
   end
   
   def animate
-    @root.title = "#{@name}. point: #{@point}. count_life: #{@life}" if !game_over?
+    @root.title = "#{@name}. point: #{@point}. count_life: #{@life}. speed: #{@ball.dy.abs}" if !game_over?
     @ball.move
     check_collision
     @root.after(100 - @speed) { animate }
@@ -51,6 +51,11 @@ class Game
   
   def game_over?
     @game_over
+  end
+
+  def speed_next
+    @ball.dx += 1
+    @ball.dy += 1
   end
 
   def game_over
@@ -72,7 +77,8 @@ class Game
         paddle_x1, paddle_y1, paddle_x2, paddle_y2 = paddle_bbox
         
         if ball_y2 >= paddle_y1 && (paddle_x1..paddle_x2).include?((ball_x1 + ball_x2) / 2)
-          @point += 1
+          @point += 1 
+          speed_next if (@point % 10).zero?
           @ball.dy *= -1
         end
 
